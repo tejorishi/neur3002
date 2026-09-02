@@ -1,0 +1,73 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- Neuron Parameters (realistic, in mV and pA) ---
+C = 100.0 # this is the capacitance of the neuron
+V_th = -55 # this is the threshold potential of the neuron and signifies the minimum voltage required to cause an AP
+V_reset = -65.0 # this signifies the membrane voltage reached after an AP is fired.
+V_rest = -70 # This is the resting membrane potential with no stimulus
+I_ext = 300.0 # concentration current
+dt = 0.1 # the change in time
+C2 = 200
+
+
+C2 = 210.0 # this is the capacitance of the neuron
+V_th2 = -55 # this is the threshold potential of the neuron and signifies the minimum voltage required to cause an AP
+V_reset2 = -60.0 # this signifies the membrane voltage reached after an AP is fired.
+V_rest2 = -65.0
+I_ext2 = 300.0
+dt = 0.1
+
+
+T = 100          # total simulation time in ms
+dt = 0.1         # time step in ms
+time = np.arange(0, T, dt)  # time vector
+
+# --- Initialize voltage and spike times ---
+V = np.full_like(time, V_rest)  # set all values to resting voltage
+spike_times = []
+V2 = np.full_like(time, V_rest2)  # set all values to resting voltage
+spike_times2 = []
+
+# --- Simulation for Neuron 1 ---
+for i in range(1, len(time)):
+    dV = (I_ext / C) * dt       # ΔV = (I / C) * dt, in mV
+    V[i] = V[i-1] + dV
+
+
+    if V[i] >= V_th:
+        V[i-1] = 40.0           # mark spike as +40 mV (for visualization)
+        V[i] = V_reset
+        spike_times.append(time[i])
+
+# --- Simulation for Neuron 2 ---
+for i in range(1, len(time)):
+    dV2 = (I_ext2 / C2) * dt
+    V2[i] = V2[i-1] + dV2
+
+    if V2[i] >= V_th2:
+        V2[i-1] = 40.0
+        V2[i] = V_reset2
+        spike_times2.append(time[i])
+
+# --- Plotting ---
+plt.figure(figsize=(12, 6))
+
+# Plotting both neurons on the same graph
+plt.plot(time, V, label='Neuron 1 Membrane Potential', color='blue')
+plt.vlines(spike_times, V_th, 40, color='green', linestyle='-', label='Neuron 1 Spikes')
+
+plt.plot(time, V2, label='Neuron 2 Membrane Potential', color='orange')
+plt.vlines(spike_times2, V_th2, 40, color='red', linestyle='-', label='Neuron 2 Spikes')
+
+plt.axhline(V_th, color='gray', linestyle='--', label='Neuron 1 Threshold')
+plt.axhline(V_th2, color='purple', linestyle='--', label='Neuron 2 Threshold')
+
+plt.xlabel('Time (ms)')
+plt.ylabel('Voltage (mV)')
+plt.title('Integrate and Fire Model for Two Neurons')
+plt.grid(True)
+plt.legend()
+
+plt.tight_layout()
+plt.show()
