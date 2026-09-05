@@ -1,0 +1,49 @@
+%matplotlib inline
+import numpy as np
+import matplotlib.pyplot as plt
+
+# --- Time setup ---
+T = 100      # total time (ms)
+dt = 0.1     # step size (ms)
+time = np.arange(0, T, dt)
+
+# --- Neuron parameters ---
+C = 200.0            # capacitance (pF)
+g_L = 15.0           # leak conductance (nS)
+tau_m = C / g_L      # time constant of leak (ms)
+E_L = -65.0          # resting potential (mV)
+V_th = -50.0         # threshold (mV)
+V_reset = -65.0      # reset voltage (mV)
+I_ext = 350.0        # constant input current (pA)
+
+# --- Initialize voltage and spike list ---
+V = np.full_like(time, E_L)
+spike_times = []
+
+# --- Simulation loop ---
+for i in range(1, len(time)):
+    # Missing leak term; only the external current is used
+    dV = ((I_ext - 0.5*(g_L*(V[i-1]-E_L)))/ C)* dt  # THIS IS STILL MISSING THE LEAK TERM, YOU NEED TO FIX IT HERE, OR YOU WILL GET ERROR.
+    V[i] = V[i-1] + dV
+
+    # Check if voltage is increasing linearly (leak term is missing)
+    if i > 10:  # Start checking after a few iterations
+        if np.allclose(np.diff(V[i-10:i][V[i-10:i] < V_th]), np.diff(V[i-10:i][V[i-10:i] < V_th])[0], atol=1e-3):
+            raise RuntimeError("Voltage is increasing linearly — did you forget the leak term?")
+
+    if V[i] >= V_th:
+        V[i-1] = 40.0       # mark spike visually
+        V[i] = V_reset
+        spike_times.append(time[i])
+
+# --- Plotting ---
+plt.figure(figsize=(10, 4))
+plt.plot(time, V, label='Membrane Potential (mV)')
+plt.axhline(V_th, color='r', linestyle='--', label='Threshold')
+plt.xlabel('Time (ms)') #what should this be labeled as?
+plt.ylabel('Voltage (mV)') #what should this be labeled as?
+plt.title('Leaky Integrate-and-Fire Neuron')
+plt.legend()
+plt.grid(True)
+plt.show()
+
